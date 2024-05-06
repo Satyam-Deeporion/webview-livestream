@@ -247,7 +247,6 @@ line-height: 22px; /* 157.143% */
 
               const ingestEndpoint = `rtmps://4272cdac8945.global-contribute.live-video.net:443/app/`;
               const streamURI = `sk_us-east-1_sG061vx00v26_o3rdJorOYaSMSpeKMh5s7qsEKgGikE`;
-                  console.log(ingestEndpoint,streamURI);
               try {
                 await window.client.startBroadcast( streamURI,ingestEndpoint);
               } catch (err) {
@@ -326,7 +325,6 @@ line-height: 22px; /* 157.143% */
             function toggleAudio () {
               const id = "microphone";
               const audioButton = document.querySelector(".microphone"); 
-              console.log(window.client.getAudioInputDevice(id));
               if (window.client.getAudioInputDevice(id)) {
                 window.client.removeAudioInputDevice(id);
                 audioButton.innerHTML = '<i class="fa-solid fa-microphone-slash" style="color: #FE7C35;"></i>';
@@ -353,7 +351,6 @@ line-height: 22px; /* 157.143% */
               cameraMode = (cameraMode === 0) ? 1 : 0; 
 
                 handleVideoDeviceSelect(cameraMode);
-                console.log(videoButton.innerHTML);
                 videoButton.innerHTML = (cameraMode === 1) ? '<i class="fa-solid fa-camera-rotate" style="color: #FE7C35;"></i>' : '<i class="fa-solid fa-camera-rotate"></i>';
                 videoButton.style.backgroundImage = (cameraMode === 1) ? "none" : "linear-gradient(99deg, #ffd593 2.64%, #ff5603 100%)";
                }
@@ -431,7 +428,7 @@ line-height: 22px; /* 157.143% */
   const closeButton = document.querySelector('.fa-xmark');
   if (closeButton) {
     closeButton.addEventListener('click', function() {
-      window.postMessage = 'stayfitter://close-stream';  
+      window.location.href = 'stayfitter://close-stream';  
     });
   }
 })();
