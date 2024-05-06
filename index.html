@@ -428,7 +428,7 @@ line-height: 22px; /* 157.143% */
   const closeButton = document.querySelector('.fa-xmark');
   if (closeButton) {
     closeButton.addEventListener('click', function() {
-      window.postMessage('closeWebView');
+      window.location.href = 'https://www.facebook.com/dialog/return/close?#_=_';
     });
   }
 })();
