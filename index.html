@@ -428,10 +428,11 @@ line-height: 22px; /* 157.143% */
   const closeButton = document.querySelector('.fa-xmark');
   if (closeButton) {
     closeButton.addEventListener('click', function() {
-      window.close();  
+      window.postMessage('closeWebView');
     });
   }
 })();
+
     </script>
   </body>
 </html>
