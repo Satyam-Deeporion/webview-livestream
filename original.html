@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Broadcast To IVS</title>
+    <!-- Google Fonts -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow-y: hidden;
+      }
+
+      .container {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      canvas {
+        object-fit: cover;
+        max-width: 100%;
+        height: 100%;
+      }
+
+      /* Media queries for different screen sizes */
+      @media (max-width: 768px) {
+        .container {
+          flex-direction: column;
+        }
+      }
+
+      .button-container {
+        position: absolute;
+        bottom: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 21px;
+
+      }
+
+      .button {
+        padding: 20px 20px;
+        margin-right: 10px;
+        border: none;
+        border-radius: 80%;
+        color: white;
+        cursor: pointer;
+        outline: none;
+        transition: background-color 0.3s;
+        background-image: linear-gradient(99deg, #ffd593 2.64%, #ff5603 100%);
+
+      }
+
+      .button.microphone {
+        padding: 20px 23px;
+        margin-right: 10px;
+        border: none;
+        border-radius: 80%;
+        background-color: #fff;
+        color: white;
+        cursor: pointer;
+        outline: none;
+        transition: background-color 0.3s;
+        background-image: linear-gradient(99deg, #ffd593 2.64%, #ff5603 100%);
+
+      }
+      
+
+      .go-live {
+        display: flex;
+        align-items: center;
+        padding: 10px 11px;
+        margin-right: 10px;
+        border: none;
+        border-radius: 80%;
+        background-color: #fff;
+        color: white;
+        cursor: pointer;
+        outline: none;
+        transition: background-color 0.3s;
+      }
+
+      .stop-live {
+        padding:0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+        border: none;
+        border-radius: 80%;
+        background-color: #fff;
+        color: white;
+        cursor: pointer;
+        outline: none;
+        transition: background-color 0.3s;
+      }
+
+      .top-bar {
+  position: absolute; 
+  top: 0; 
+  left: 0;
+  right: 0;
+  display: flex; 
+  align-items: center; 
+  padding: 12px 12px 12px 24px; 
+}
+
+.profile-image {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+  background-color: #f0f0f0; 
+  border-radius: 50%; 
+}
+
+.username {
+  color: var(--Basic-White, #FFF);
+/* text-sm/font-normal */
+font-family: Inter;
+font-size: 16px;
+font-style: normal;
+font-weight: 400;
+line-height: 22px; /* 157.143% */
+}
+
+.view-count {
+  display: flex;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.60); 
+  padding: 9px 11px; 
+  border-radius: 8px;
+}
+
+.view-count i {
+  margin-right: 5px;
+  color: white;
+}
+
+.count {
+  color: white;
+  font-weight: bold;
+}
+
+.top-bar > .view-count {
+  margin-left: auto; /* Push view count to the right edge */
+}
+
+.fa-xmark {
+  margin-left: 42px; /* Add some margin for spacing */
+  color: white;
+  font-size: 30px;  
+  padding-right: 12px;
+
+}
+
+    </style>
+  </head>
+
+  <body>
+    <section class="container">
+      <canvas id="preview"></canvas>
+      <div class="top-bar">
+        <img class="profile-image" src="https://burst.shopifycdn.com/photos/fitness-workout.jpg?width=925&format=pjpg&exif=0&iptc=0">
+        <span class="username">John_Doe</span>
+
+        <div class="view-count">
+          <i class="fa-solid fa-eye"></i>
+          <span class="count">1</span>
+        </div>
+        <i class="fa-solid fa-xmark"></i> </div>
+      </div>
+      <div class="button-container">
+        <button class="button cameraMode" onclick="toggleCameraMode()">
+          <i class="fa-solid fa-camera-rotate"></i>
+        </button>
+        <button id="liveButton" class="go-live" onclick="toggleLive()">
+          <img id="goLiveIcon" src="./goLive.svg" />
+        </button>
+        <button class="button microphone" onclick="toggleAudio()">
+          <i class="fa-solid fa-microphone"></i>
+        </button>
+      </div>
+    </section>
+    <p id="error"></p>
+
+    <script src="https://web-broadcast.live-video.net/1.10.1/amazon-ivs-web-broadcast.js"></script>
+    <script>
+            // SDK https://aws.github.io/amazon-ivs-web-broadcast/docs/sdk-reference/classes/AmazonIVSBroadcastClient
+            // Set initial config for our broadcast
+
+            const config = {
+        ingestEndpoint: "rtmps://4272cdac8945.global-contribute.live-video.net:443/app/",
+        streamConfig: window.IVSBroadcastClient.BASIC_LANDSCAPE,
+        logLevel: window.IVSBroadcastClient.LOG_LEVEL.DEBUG
+      };
+            function clearError() {
+              const errorEl = document.getElementById("error");
+              errorEl.innerHTML = "";
+            }
+
+            function setError(message) {
+              if (Array.isArray(message)) {
+                message = message.join("<br/>");
+              }
+              const errorEl = document.getElementById("error");
+              errorEl.innerHTML = message;
+            }
+
+
+           function toggleLive () {
+              const goLiveIcon = document.getElementById("goLiveIcon");
+
+       const isLive = goLiveIcon.src.includes("goLive"); // Check if current icon is goLive
+      if (isLive) {
+      goLiveIcon.src = "./stopBtn.svg";
+      liveButton.classList.remove("go-live");
+      liveButton.classList.add("stop-live");
+
+      startBroadcast()
+    } else {
+      goLiveIcon.src = "./goLive.svg"; // Change to go live button
+      liveButton.classList.remove("stop-live");
+      liveButton.classList.add("go-live");
+      stopBroadcast()
+      }
+    }
+
+    
+
+            async function startBroadcast() {
+
+              const ingestEndpoint = `rtmps://4272cdac8945.global-contribute.live-video.net:443/app/`;
+              const streamURI = `sk_us-east-1_sG061vx00v26_o3rdJorOYaSMSpeKMh5s7qsEKgGikE`;
+                  console.log(ingestEndpoint,streamURI);
+              try {
+                await window.client.startBroadcast( streamURI,ingestEndpoint);
+              } catch (err) {
+                setError(err.toString());
+              }
+            }
+
+            // Stop the broadcast
+            function stopBroadcast() {
+              try {
+                window.client.stopBroadcast();
+              } catch (err) {
+                setError(err.toString());
+              }
+            }
+
+            // Handle the enabling/disabling of buttons
+            function onActiveStateChange(active) {
+              const isDisabled = active;
+              // do something...
+            }
+
+            async function getCamera(deviceId, maxWidth, maxHeight) {
+              let media;
+              const videoConstraints = {
+                deviceId: deviceId
+                  ? {
+                      exact: deviceId,
+                    }
+                  : null,
+                width: {
+                  max: maxWidth,
+                },
+                height: {
+                  max: maxHeight,
+                },
+              };
+              try {
+                // Let's try with max width and height constraints
+                media = await navigator.mediaDevices.getUserMedia({
+                  video: videoConstraints,
+                  audio: true,
+                });
+              } catch (e) {
+                // and fallback to unconstrained result
+                delete videoConstraints.width;
+                delete videoConstraints.height;
+                media = await navigator.mediaDevices.getUserMedia({
+                  video: videoConstraints,
+                });
+              }
+              return media;
+            }
+
+            // Handle video device retrieval
+            async function handleVideoDeviceSelect(deviceToggleNo) {
+              const id = "camera";
+              const { videoDevices: devices } = await getDevices();
+              if (window.client.getVideoInputDevice(id)) {
+                window.client.removeVideoInputDevice(id);
+              }
+
+              // Get the option's video
+              const selectedDevice = devices[deviceToggleNo];
+              const deviceId = selectedDevice ? selectedDevice.deviceId : null;
+              const { width, height } = config.streamConfig.maxResolution;
+              const cameraStream = await getCamera(deviceId, width, height);
+
+              // Add the camera to the top
+              await window.client.addVideoInputDevice(cameraStream, id, {
+                index: 0,
+              });
+            }
+
+
+            function toggleAudio () {
+              const id = "microphone";
+              const audioButton = document.querySelector(".microphone"); 
+              console.log(window.client.getAudioInputDevice(id));
+              if (window.client.getAudioInputDevice(id)) {
+                window.client.removeAudioInputDevice(id);
+                audioButton.innerHTML = '<i class="fa-solid fa-microphone-slash" style="color: #FE7C35;"></i>';
+                audioButton.style.backgroundImage = "none"; 
+                audioButton.style.backgroundColor = "#fff";    
+                audioButton.style.padding = '20px 19px';
+ 
+            } else {
+              audioButton.style.backgroundImage = "linear-gradient(99deg, #ffd593 2.64%, #ff5603 100%)";
+              audioButton.style.padding = '20px 23px';
+              audioButton.innerHTML = '<i class="fa-solid fa-microphone"></i>'
+
+ 
+
+                handleAudioDeviceSelect()
+              }
+            }
+
+            let cameraMode = 0
+            function toggleCameraMode() {
+              const id = "camera";
+
+              const videoButton = document.querySelector(".cameraMode"); 
+              cameraMode = (cameraMode === 0) ? 1 : 0; 
+
+                handleVideoDeviceSelect(cameraMode);
+                console.log(videoButton.innerHTML);
+                videoButton.innerHTML = (cameraMode === 1) ? '<i class="fa-solid fa-camera-rotate" style="color: #FE7C35;"></i>' : '<i class="fa-solid fa-camera-rotate"></i>';
+                videoButton.style.backgroundImage = (cameraMode === 1) ? "none" : "linear-gradient(99deg, #ffd593 2.64%, #ff5603 100%)";
+               }
+            
+
+
+            
+
+            // Handle audio/video device enumeration
+            async function getDevices() {
+              const devices = await navigator.mediaDevices.enumerateDevices();
+              const videoDevices = devices.filter((d) => d.kind === "videoinput");
+              if (!videoDevices.length) {
+                setError("No video devices found.");
+              }
+              const audioDevices = devices.filter((d) => d.kind === "audioinput");
+              if (!audioDevices.length) {
+                setError("No audio devices found.");
+              }
+
+              return {
+                videoDevices,
+                audioDevices,
+              };
+            }
+
+            // Handle audio device retrieval
+            async function handleAudioDeviceSelect() {
+              const id = "microphone";
+              const { audioDevices: devices } = await getDevices();
+              const audioButton = document.querySelector(".microphone"); 
+
+              const selectedDevice = devices.find(
+                (device) => device.deviceId === "default"
+                );
+              // Unlike video, for audio we default to "None" instead of the first device
+              if (selectedDevice) {
+                const microphoneStream = await navigator.mediaDevices.getUserMedia({
+                  audio: {
+                    deviceId: selectedDevice.deviceId,
+                  },
+                });
+                await window.client.addAudioInputDevice(microphoneStream, id);
+              }
+            }
+
+            (async function () {
+              // Initialization function
+              try {
+                
+                if (window.client) {
+                  window.client.delete();
+                }
+
+                window.client = window.IVSBroadcastClient.create(config);
+
+                window.client.on(
+                  window.IVSBroadcastClient.BroadcastClientEvents.ACTIVE_STATE_CHANGE,
+                  (active) => {
+                    onActiveStateChange(active);
+                  }
+                );
+
+                const previewEl = document.getElementById("preview");
+                window.client.attachPreview(previewEl);
+
+                await handleVideoDeviceSelect();
+                await handleAudioDeviceSelect();
+              } catch (err) {
+                setError(err.message);
+              }
+            })();
+
+            (function() {
+  const closeButton = document.querySelector('.fa-xmark');
+  if (closeButton) {
+    closeButton.addEventListener('click', function() {
+      window.postMessage = 'stayfitter://close-stream';  
+    });
+  }
+})();
+    </script>
+  </body>
+</html>
