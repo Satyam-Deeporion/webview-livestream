@@ -152,6 +152,14 @@
         border-radius: 8px;
       }
 
+      .duration {
+        display: flex;
+        align-items: center;
+        background-color: rgba(0, 0, 0, 0.6);
+        padding: 9px 11px;
+        border-radius: 8px;
+      }
+
       .view-count i {
         margin-right: 5px;
         color: white;
@@ -160,14 +168,20 @@
       .count {
         color: white;
         font-weight: bold;
+        font-family: Inter;
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 18px;
       }
 
-      .top-bar > .view-count {
-        margin-left: auto; 
+      .top-bar > .duration {
+        margin-left: auto;
+        margin-right: 20px;
       }
 
       .fa-xmark {
-        margin-left: 42px; 
+        margin-left: 22px;
         color: white;
         font-size: 30px;
         padding-right: 12px;
@@ -185,6 +199,9 @@
         />
         <span class="username">John_Doe</span>
 
+        <div class="duration">
+          <span class="count">0:00</span>
+        </div>
         <div class="view-count">
           <i class="fa-solid fa-eye"></i>
           <span class="count">1</span>
@@ -237,13 +254,14 @@
           goLiveIcon.src = "./stopBtn.svg";
           liveButton.classList.remove("go-live");
           liveButton.classList.add("stop-live");
-
           startBroadcast();
+          startTimer();
         } else {
           goLiveIcon.src = "./goLive.svg"; // Change to go live button
           liveButton.classList.remove("stop-live");
           liveButton.classList.add("go-live");
           stopBroadcast();
+          stopTimer();
         }
       }
 
@@ -399,6 +417,26 @@
           await window.client.addAudioInputDevice(microphoneStream, id);
         }
       }
+      function startTimer() {
+        // Starts the duration timer
+        let seconds = 0;
+        const durationEl = document.querySelector(".duration .count");
+        durationEl.textContent = "0:00";
+
+        timerInterval = setInterval(() => {
+          seconds++;
+          const minutes = Math.floor(seconds / 60);
+          const remainingSeconds = seconds % 60;
+          durationEl.textContent = `${minutes}:${
+            remainingSeconds < 10 ? "0" : ""
+          }${remainingSeconds}`;
+        }, 1000);
+      }
+
+      function stopTimer() {
+        // Stops duration timer
+        clearInterval(timerInterval);
+      }
 
       (async function () {
         // Initialization function
@@ -430,7 +468,7 @@
         const closeButton = document.querySelector(".fa-xmark");
         if (closeButton) {
           closeButton.addEventListener("click", function () {
-            window.ReactNativeWebView.postMessage('close');
+            window.ReactNativeWebView.postMessage("close");
           });
         }
       })();
