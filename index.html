@@ -430,8 +430,7 @@
         const closeButton = document.querySelector(".fa-xmark");
         if (closeButton) {
           closeButton.addEventListener("click", function () {
-            window.location.href =
-              "https://www.facebook.com/dialog/return/close?#_=_";
+            window.ReactNativeWebView.postMessage('close');
           });
         }
       })();
